@@ -10,6 +10,9 @@ import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -143,6 +146,43 @@ public class Message_Tab {
         wait.until(ExpectedConditions.textToBePresentInElement(error_msg,expected_error_msg));
         String actual_error_msg = error_msg.getText();
         Assert.assertEquals(actual_error_msg,expected_error_msg,"error msg does not match");
+    }
+
+    @Test
+    public void add_contact_from_Employees_departments(){
+        driver.findElement(By.xpath("//span[.='Message']")).click();
+        driver.findElement(By.xpath("//a[@id='bx-destination-tag']")).click();
+        driver.findElement(By.xpath("//div/div[.='All employees']")).click();
+        driver.findElement(By.xpath("//a[contains(@id,'destDepartmentTab_destination')]")).click();
+
+        List<String> employeeList = new ArrayList<>();
+        employeeList.add("helpdesk29");
+        employeeList.add("marketing3");
+        employeeList.add(("hr22"));
+        employeeList.add("helpdesk8");
+
+        for (String each: employeeList){
+            String xpath = String.format("//a[contains(.,'%s@')][contains(@class,'company-department-employee')]",each);
+            driver.findElement(By.xpath(xpath)).click();
+        }
+        driver.findElement(By.xpath("//span[@class='popup-window-close-icon']")).click();
+
+        WebElement iframe = driver.findElement(By.xpath("//iframe[@class='bx-editor-iframe']"));
+        driver.switchTo().frame(iframe);
+        driver.findElement(By.xpath("//body")).sendKeys("select from employee list");
+        driver.switchTo().defaultContent();
+        driver.findElement(By.xpath("//button[@id='blog-submit-button-save']")).click();
+
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(By.xpath("//div[@id='feed-loader-container']")));
+        WebElement latest_post = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@id='log_internal_container']//" +
+                "div[@class='feed-item-wrap'][1]")));
+
+        String actual_sendTo_list = latest_post.findElement(By.xpath("//span[contains(@class,'destination-cont')]")).getText();
+        String expected_sendTo_List = "helpdesk29@cybertekschool.com, marketing3@cybertekschool.com, " +
+                "hr22@cybertekschool.com, helpdesk8@cybertekschool.com";
+
+        Assert.assertEquals(actual_sendTo_list,expected_sendTo_List,"sendTo list does not match");
+
     }
 
     @AfterMethod
